@@ -1,3 +1,6 @@
+from no_solution_exception import NoSolutionException
+
+
 class SimplexTable:
 
     def __init__(self, n, m, f, a, b):
@@ -23,6 +26,7 @@ class SimplexTable:
     #текущие значения правых сторон ограничений
         self.b = b
         self._update_score()
+        self.phase1()
     
     def _update_score(self): #функция для пересчета оценок для столбцов
 
@@ -42,7 +46,7 @@ class SimplexTable:
 
     def _check_is_optimal_phase1(self): #функция для проверки того, что фаза 1 закончилась
         for i in self.score_m:
-            if self.score_m > 0:
+            if i > 0:
                 return False
         return True
 
@@ -56,14 +60,18 @@ class SimplexTable:
                 max_ind = i
                 current_max = f[i]
         for i in range(len(self.a[max_ind])):
-            if self.b[i] / self.a[max_ind][i] < current_min or min_ind == -1:
+            if (self.b[i] / self.a[max_ind][i] < current_min or min_ind == -1) and self.a[max_ind][i] > 0:
                 current_min = self.b[i] / self.a[max_ind][i]
                 min_ind = i
+        if min_ind == -1:
+            raise NoSolutionException('Решения нет, целевая функция неограичена')
+        b_tmp = [0 for i in range(len(self.b))]
         for i in range(self.m): #релаксируем столбец b
             if i != min_ind:
-                self.b[i] = self.b[i] - (self.b[min_ind] / self.a[max_ind][min_ind]) * self.a[max_ind][i]
+                b_tmp[i] = self.b[i] - (self.b[min_ind] / self.a[max_ind][min_ind]) * self.a[max_ind][i]
             else:
-                self.b[i] = self.b[min_ind] / self.a[max_ind][min_ind]
+                b_tmp[i] = self.b[min_ind] / self.a[max_ind][min_ind]
+        self.b = b_tmp
         tmp = [[0 for j in range(len(self.a[i]))] for i in range(len(self.a))]
         for i in range(sz): #релаксируем матрицу
             for j in range(len(self.a[i])):
@@ -76,7 +84,7 @@ class SimplexTable:
         self._update_score()
 
     def phase1(self):
-        # while self.check_is_optimal_phase1():
+        while not self._check_is_optimal_phase1():
             self._relax_table(self.n + self.m, self.score_m)
 
     def print_table_info(self):

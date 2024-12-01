@@ -1,6 +1,9 @@
 from simplex_table import SimplexTable
+from no_solution_exception import NoSolutionException
 
-st = SimplexTable(3, 2, [-1, -4, -1], [[1, -1, 1], [2, -5, -1]], [3, 0])
-# st = SimplexTable(4, 3, [1, -2, 3, -10], [[1, 1, 2, -6], [1, 1, 4, -8], [4, 2, 1, -4]], [1, 1, 3])
-st.phase1()
-st.print_table_info()
+
+try:
+    st = SimplexTable(3, 2, [-1, -4, -1], [[1, -1, 1], [2, -5, -1]], [3, 0])
+    st.print_table_info()
+except NoSolutionException as e:
+    print(e)
