@@ -25,15 +25,15 @@ class SimplexTable:
         self.score_m = [0 for i in range(n + m)]
     #текущие значения правых сторон ограничений
         self.b = b
-        self._update_score()
+        self._update_score(self.n + self.m)
         self.phase1()
         self.phase2()
     
-    def _update_score(self): #функция для пересчета оценок для столбцов
+    def _update_score(self, sz): #функция для пересчета оценок для столбцов
 
         self.score = [0 for i in range(len(self.score))]
         self.score_m = [0 for i in range(len(self.score_m))]
-        for i in range(self.n + self.m):
+        for i in range(sz):
             for j in range(self.m):
                 res = self.a[i][j] * self.basis[j][1]
                 if self.basis[j][2] == 0:
@@ -45,7 +45,7 @@ class SimplexTable:
             else:
                 self.score_m[i] -= self.f[i][0]
 
-    def _check_is_optimal_phase(self, f): #функция для проверки того, что фаза 1 закончилась
+    def _check_is_optimal_phase(self, f): #функция для проверки того, что фаза
         for i in f:
             if i > 0:
                 return False
@@ -61,7 +61,7 @@ class SimplexTable:
                 max_ind = i
                 current_max = f[i]
         for i in range(len(self.a[max_ind])):
-            if (self.b[i] / self.a[max_ind][i] < current_min or min_ind == -1) and self.a[max_ind][i] > 0:
+            if self.a[max_ind][i] > 0 and (self.b[i] / self.a[max_ind][i] < current_min or min_ind == -1):
                 current_min = self.b[i] / self.a[max_ind][i]
                 min_ind = i
         if min_ind == -1:
@@ -82,7 +82,7 @@ class SimplexTable:
                     tmp[i][j] = self.a[i][j] - self.a[i][min_ind] / self.a[max_ind][min_ind] * self.a[max_ind][j]
         self.a = tmp
         self.basis[min_ind] = (max_ind, *self.f[max_ind])
-        self._update_score()
+        self._update_score(sz)
 
     def phase1(self):
         while not self._check_is_optimal_phase(self.score_m):
@@ -93,11 +93,20 @@ class SimplexTable:
 
 
     def phase2(self):
+        self.a = self.a[:self.n]
+        self.score = self.score[:self.n]
+        self.f = self.f[:self.n]
         while not self._check_is_optimal_phase(self.score):
             self._relax_table(self.n, self.score)
 
+    def get_ans(self):
+        ans = 0
+        for j in range(self.m):
+            ans += self.b[j] * self.basis[j][1]
+        return ans
+
     def print_table_info(self):
-        for i in range(self.n + self.m):
+        for i in range(len(self.a)):
             print(*self.a[i])
         print(*self.basis)
         print(*self.f)
