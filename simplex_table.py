@@ -27,6 +27,7 @@ class SimplexTable:
         self.b = b
         self._update_score()
         self.phase1()
+        self.phase2()
     
     def _update_score(self): #функция для пересчета оценок для столбцов
 
@@ -44,8 +45,8 @@ class SimplexTable:
             else:
                 self.score_m[i] -= self.f[i][0]
 
-    def _check_is_optimal_phase1(self): #функция для проверки того, что фаза 1 закончилась
-        for i in self.score_m:
+    def _check_is_optimal_phase(self, f): #функция для проверки того, что фаза 1 закончилась
+        for i in f:
             if i > 0:
                 return False
         return True
@@ -84,8 +85,16 @@ class SimplexTable:
         self._update_score()
 
     def phase1(self):
-        while not self._check_is_optimal_phase1():
+        while not self._check_is_optimal_phase(self.score_m):
             self._relax_table(self.n + self.m, self.score_m)
+        for i in self.basis:
+            if i[0] >= self.n:
+                raise NoSolutionException('Решения нет, в базисе получились искусственные переменные')
+
+
+    def phase2(self):
+        while not self._check_is_optimal_phase(self.score):
+            self._relax_table(self.n, self.score)
 
     def print_table_info(self):
         for i in range(self.n + self.m):
