@@ -1,2 +1,0 @@
-class NoSolutionException(Exception):
-    pass
